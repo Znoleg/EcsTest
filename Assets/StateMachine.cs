@@ -1,23 +1,23 @@
-using UnityEngine;
+using System;
+using System.Collections.Generic;
 
 public interface IStateMachine {
-    void ChangeState(IState state);
+    void ChangeState<TState>() where TState : IState;
 }
 
-public abstract class StateMachine : MonoBehaviour, IStateMachine {
+public class StateMachine : IStateMachine {
+    private readonly Dictionary<Type, IState> _states = new();
+
     public IState CurrentState { get; private set; }
 
-    public void ChangeState(IState state) {
+    public void ChangeState<TState>() where TState : IState {
         CurrentState?.Exit();
-        state.Enter();
+        IState state = _states[typeof(TState)];
         CurrentState = state;
+        state.Enter();
     }
 
-    private void Update() {
-        CurrentState?.LogicTick();
-    }
-
-    private void FixedUpdate() {
-        CurrentState?.PhysicsTick();
+    public void InjectState<TState>(IState state) where TState : IState {
+        _states.Add(typeof(TState), state);
     }
 }

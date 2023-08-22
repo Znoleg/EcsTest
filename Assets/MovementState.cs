@@ -14,16 +14,21 @@ public abstract class BaseState : IState {
 }
 
 public class MovementState : BaseState {
-	private readonly CharacterStateMachine _characterStateMachine;
 	private readonly float _speed;
+	private readonly Transform _owner;
+	private readonly Animator _anim;
+	private static readonly int Walk = Animator.StringToHash("walk");
+	private static readonly int MoveX = Animator.StringToHash("moveX");
+	private static readonly int MoveY = Animator.StringToHash("moveY");
 
-	public MovementState(CharacterStateMachine characterStateMachine, float speed) : base(characterStateMachine) {
-		_characterStateMachine = characterStateMachine;
+	public MovementState(IStateMachine stateMachine, Transform owner, Animator anim, float speed) : base(stateMachine) {
+		_owner = owner;
 		_speed = speed;
+		_anim = anim;
 	}
-    
+
 	public override void Enter() {
-		Debug.Log($"{_characterStateMachine} entered {nameof(MovementState)}");
+		_anim.SetBool(Walk, true);
 	}
 
 	public override void LogicTick() {
@@ -38,18 +43,20 @@ public class MovementState : BaseState {
 		} else if (Input.GetKey(KeyCode.S)) {
 			direction = new Vector2(0f, -1f);
 		} else {
-			_characterStateMachine.ChangeState(_characterStateMachine.IdleState);
+			StateMachine.ChangeState<IdleState>();
 			return;
 		}
 
-		_characterStateMachine.transform.position += direction * _speed * Time.deltaTime;
+		_anim.SetFloat(MoveX, direction.x);
+		_anim.SetFloat(MoveY, direction.y);
+		_owner.position += direction * _speed * Time.deltaTime;
 	}
 
-	public override void PhysicsTick() {
-        
-	}
+	public override void PhysicsTick() { }
 
 	public override void Exit() {
-		Debug.Log($"{_characterStateMachine} exited {nameof(MovementState)}");
+		_anim.SetBool(Walk, false);
+		_anim.SetFloat(MoveX, 0f);
+		_anim.SetFloat(MoveY, 0f);
 	}
 }
