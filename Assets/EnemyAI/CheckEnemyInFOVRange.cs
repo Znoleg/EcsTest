@@ -11,7 +11,7 @@ namespace EnemyAI {
 		
 		public override NodeState Evaluate() {
 			const float noticeDistance = 3f;
-			Node node = Parent.Parent;
+			Node node = Parent;
 			Collider2D result = Physics2D.OverlapCircle(_owner.position, noticeDistance, LayerMask.GetMask("Player"));
 			if (result != null) {
 				node.SetData("target", result.transform);
